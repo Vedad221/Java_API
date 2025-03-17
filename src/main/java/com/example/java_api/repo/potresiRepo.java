@@ -22,7 +22,10 @@ public class potresiRepo {
             String url="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
             String response=restTemplate.getForObject(url, String.class);
 
+            int val =1;
+
            return response;
+
 
 
         }
