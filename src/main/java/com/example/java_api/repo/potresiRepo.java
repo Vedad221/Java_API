@@ -13,12 +13,12 @@ import java.util.List;
 
 public class potresiRepo {
 
-     RestTemplate restTemplate = new RestTemplate();
+     static RestTemplate restTemplate = new RestTemplate();
 
 
 
 
-    public String najdiZadnjiMesec(){
+    public  String najdiZadnjiMesec(){
             String url="https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
             String response=restTemplate.getForObject(url, String.class);
 
