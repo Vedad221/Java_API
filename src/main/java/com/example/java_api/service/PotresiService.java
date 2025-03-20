@@ -13,7 +13,7 @@ public class PotresiService {
     private PotresiRepo potresiRepo;
 
             @CircuitBreaker(name="potresi", fallbackMethod = "fallbackZaPotrese")
-            public Potres najduNajhusjiPotresTedan(){
+            public String najduNajhusjiPotresTedan(){
                 return potresiRepo.najdiZadnjiMesec();
 
             }
