@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class PotresiController {
+    int i=1;
 
 @GetMapping("/test")
 
     public String greeting() {
         return String.format(PotresiRepo.najdiZadnjiMesec()
         );
+
 
 
     }
