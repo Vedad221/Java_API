@@ -1,4 +1,4 @@
-package com.example.java_api;
+package si.telekom.potres;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
