@@ -5,6 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Service
 public class PotresiService {
     private RestTemplate restTemplate;
@@ -19,9 +23,14 @@ public class PotresiService {
         String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
         String response = restTemplate.getForObject(url, String.class);
 
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(response.split("\\n")));
 
 
 
-        return response;
+
+
+
+
+        return list.get(0);
     }
 }
