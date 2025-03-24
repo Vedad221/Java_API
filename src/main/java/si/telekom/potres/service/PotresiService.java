@@ -27,25 +27,29 @@ public class PotresiService {
     public String najdiZadnjiMesec() {
         String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
         String response = restTemplate.getForObject(url, String.class);
-        double maxMagnitude = 0;
         ArrayList<String> list = new ArrayList<>(Arrays.asList(response.split("\\n")));
-        int i;
+
+        double maxMagnitude = 0;
+
+
+
         ObjectMapper mapper = new ObjectMapper();
-        ArrayList filtered = new ArrayList();
+        ArrayList<String> filtered = new ArrayList<>();
+        String najMocnejsi = "";
+        String krajMocnejsi = "";
+        double globina ;
 
-        String test = null ;
-        for (i=0; i<=list.size() ;i ++) {
+        for (String s : list) {
             try {
-                JsonNode node = mapper.readTree(list.get(i));
-                JsonNode features = node.path("features");
-                JsonNode properties = features.path("properties");
-                double magnitude = properties.path("mag").asDouble();
-                test = properties.path("name").asText();
+                JsonNode node = mapper.readTree(s);
+                JsonNode features = node.path("properties");
+                double magnitude = features.path("mag").asDouble();
 
-//            if (magnitude > maxMagnitude) {
-//                maxMagnitude = magnitude;
-//                filtered.add(s);
-//            }
+                if (magnitude > maxMagnitude) {
+                    maxMagnitude = magnitude;
+                    najMocnejsi = s;
+                }
+
 
 
                 } catch (Exception e) {
@@ -54,7 +58,7 @@ public class PotresiService {
             }
         }
 
-        return test;
+        return najMocnejsi;
     }
 
 
