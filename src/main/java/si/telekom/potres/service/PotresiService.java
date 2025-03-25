@@ -34,10 +34,10 @@ public class PotresiService {
 
 
         ObjectMapper mapper = new ObjectMapper();
-        ArrayList<String> filtered = new ArrayList<>();
         String najMocnejsi = "";
         String krajMocnejsi = "";
         double globina ;
+
 
         for (String s : list) {
             try {
