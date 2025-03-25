@@ -1,5 +1,6 @@
 package si.telekom.potres.service;
 
+import si.telekom.potres.model.Potres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -24,7 +25,7 @@ public class PotresiService {
     }
 
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
-    public String najdiZadnjiMesec() {
+    public Potres najdiZadnjiMesec() {
         String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
         String response = restTemplate.getForObject(url, String.class);
         ArrayList<String> list = new ArrayList<>(Arrays.asList(response.split("\\n")));
@@ -32,33 +33,44 @@ public class PotresiService {
         double maxMagnitude = 0;
 
 
-
         ObjectMapper mapper = new ObjectMapper();
         String najMocnejsi = "";
-        String krajMocnejsi = "";
-        double globina ;
+        String kraj = "";
+        double globina;
+        String geoLokacija = "";
+        double lati = 0;
+        double longi = 0;
 
 
+        Potres potresTeden = null;
         for (String s : list) {
             try {
                 JsonNode node = mapper.readTree(s);
                 JsonNode features = node.path("properties");
+                JsonNode geometry = features.path("geometry");
                 double magnitude = features.path("mag").asDouble();
 
                 if (magnitude > maxMagnitude) {
                     maxMagnitude = magnitude;
-                    najMocnejsi = s;
+                    kraj = features.path("place").asText();
+                    List<Double> coord = new ArrayList<>();
+                    log.info(coord.toString());
+                    coord.add(features.path("coordinates").asDouble());
+                    log.info(coord.get(0).toString());
+                    geoLokacija=coord.get(0) + "," + coord.get(1);
+                    globina = coord.get(2);
+                    potresTeden = new Potres(kraj, geoLokacija, globina);
+
                 }
 
 
-
-                } catch (Exception e) {
-                    log.error("Error parsing Json: ", e);
+            } catch (Exception e) {
+                log.error("Error parsing Json: ", e);
 
             }
         }
 
-        return najMocnejsi;
+        return potresTeden;
     }
 
 

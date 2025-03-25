@@ -1,5 +1,5 @@
 package si.telekom.potres.controller;
-
+import si.telekom.potres.model.Potres;
 import si.telekom.potres.service.PotresiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +15,8 @@ public class PotresiController {
     }
 
     @GetMapping("/test")
-    public String greeting() {
-        String rt;
+    public Potres greeting() {
+        Potres rt;
         rt = potresiService.najdiZadnjiMesec();
         return rt;
     }
