@@ -26,58 +26,107 @@ public class PotresiService {
 
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
     public Potres najdiZadnjiMesec() {
-        String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
-        String response = restTemplate.getForObject(url, String.class);
-        ArrayList<String> list = new ArrayList<>(Arrays.asList(response.split("\\n")));
+        String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson";
 
-        double maxMagnitude = 0;
+        try {
 
-
-        ObjectMapper mapper = new ObjectMapper();
-        String najMocnejsi = "";
-        String kraj = "";
-        double globina;
-        String geoLokacija = "";
-        double lati = 0;
-        double longi = 0;
+            String response = restTemplate.getForObject(url, String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response);
 
 
-        Potres potresTeden = null;
-        for (String s : list) {
-            try {
-                JsonNode node = mapper.readTree(s);
-                JsonNode features = node.path("properties");
-                JsonNode geometry = features.path("geometry");
-                double magnitude = features.path("mag").asDouble();
+            JsonNode features = rootNode.path("features");
+
+            double maxMagnitude = 0;
+            Potres najhujsiPotres = null;
+
+
+            for (JsonNode feature : features) {
+                JsonNode properties = feature.path("properties");
+                double magnitude = properties.path("mag").asDouble();
 
                 if (magnitude > maxMagnitude) {
                     maxMagnitude = magnitude;
-                    kraj = features.path("place").asText();
-                    List<Double> coord = new ArrayList<>();
-                    log.info(coord.toString());
-                    coord.add(features.path("coordinates").asDouble());
-                    log.info(coord.get(0).toString());
-                    geoLokacija=coord.get(0) + "," + coord.get(1);
-                    globina = coord.get(2);
-                    potresTeden = new Potres(kraj, geoLokacija, globina);
 
+
+                    String kraj = properties.path("place").asText();
+
+
+                    JsonNode geometry = feature.path("geometry");
+                    JsonNode coordinates = geometry.path("coordinates");
+
+
+                    double longitude = coordinates.get(0).asDouble();
+                    double latitude = coordinates.get(1).asDouble();
+                    double globina = coordinates.get(2).asDouble();
+
+                    String geoLokacija = latitude + "," + longitude;
+
+                    najhujsiPotres = new Potres(kraj, geoLokacija, globina);
                 }
-
-
-            } catch (Exception e) {
-                log.error("Error parsing Json: ", e);
-
             }
+
+            return najhujsiPotres;
+        } catch (Exception e) {
+            log.error("Napaka pri pridobitvi podatkov", e);
+            return new Potres("N/A", "N/A", 0.0);
         }
-
-        return potresTeden;
     }
+    @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
+    public Potres najdiZadnjiTeden() {
+        String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+        try {
+
+            String response = restTemplate.getForObject(url, String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response);
 
 
+            JsonNode features = rootNode.path("features");
+
+            double maxMagnitude = 0;
+            Potres najhujsiPotres = null;
 
 
+            for (JsonNode feature : features) {
+                JsonNode properties = feature.path("properties");
+                double magnitude = properties.path("mag").asDouble();
+
+                if (magnitude > maxMagnitude) {
+                    maxMagnitude = magnitude;
 
 
+                    String kraj = properties.path("place").asText();
 
+
+                    JsonNode geometry = feature.path("geometry");
+                    JsonNode coordinates = geometry.path("coordinates");
+
+
+                    double longitude = coordinates.get(0).asDouble();
+                    double latitude = coordinates.get(1).asDouble();
+                    double globina = coordinates.get(2).asDouble();
+
+                    String geoLokacija = latitude + "," + longitude;
+
+                    najhujsiPotres = new Potres(kraj, geoLokacija, globina);
+                }
+            }
+
+            return najhujsiPotres;
+        } catch (Exception e) {
+            log.error("Napaka pri pridobitvi podatkov", e);
+            return new Potres("N/A", "N/A", 0.0);
+        }
+    }
 }
+
+
+
+
+
+
+
+
 

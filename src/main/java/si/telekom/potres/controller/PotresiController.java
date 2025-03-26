@@ -1,4 +1,5 @@
 package si.telekom.potres.controller;
+
 import si.telekom.potres.model.Potres;
 import si.telekom.potres.service.PotresiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,19 @@ public class PotresiController {
         this.potresiService = potresiService;
     }
 
-    @GetMapping("/test")
-    public Potres greeting() {
+    @GetMapping("/potresi/rekordi/mesecni")
+    public Potres Mesec() {
         Potres rt;
         rt = potresiService.najdiZadnjiMesec();
         return rt;
     }
+
+    @GetMapping("/potresi/rekordi/tedenski")
+    public Potres Teden() {
+        Potres rt;
+        rt = potresiService.najdiZadnjiTeden();
+        return rt;
+
+    }
+
 }
