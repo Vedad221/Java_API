@@ -130,7 +130,7 @@ public class PotresiService {
         String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson";
 
         Potres zadnjiPotres = null;
-        Vreme vreme = null;
+
         try {
 
             String response = restTemplate.getForObject(url, String.class);
@@ -156,7 +156,7 @@ public class PotresiService {
                 String geoLokacija = latitude + "," + longitude;
 
 
-                vreme = vremeService.pridobiVreme(latitude, longitude);
+                 Vreme vreme = vremeService.pridobiVreme(latitude, longitude);
                 zadnjiPotres = new Potres(null,kraj, geoLokacija, globina);
                 zadnjiPotres.setVreme(vreme);
 
