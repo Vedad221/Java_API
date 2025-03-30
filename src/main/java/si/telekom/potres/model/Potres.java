@@ -9,8 +9,7 @@ public final class Potres {
     private final String geoLokacija;
     private final double globina;
 
-    public Potres(Vreme vreme, String najblizjiKraj, String geoLokacija, double globina) {
-        this.vreme = vreme;
+    public Potres( String najblizjiKraj, String geoLokacija, double globina) {
         this.najblizjiKraj = najblizjiKraj;
         this.geoLokacija = geoLokacija;
         this.globina = globina;

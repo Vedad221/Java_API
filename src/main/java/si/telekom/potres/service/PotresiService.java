@@ -63,14 +63,14 @@ public class PotresiService {
 
                     String geoLokacija = latitude + "," + longitude;
 
-                    najhujsiPotres = new Potres(null,kraj, geoLokacija, globina);
+                    najhujsiPotres = new Potres(kraj, geoLokacija, globina);
                 }
             }
 
             return najhujsiPotres;
         } catch (Exception e) {
             log.error("Napaka pri pridobitvi podatkov", e);
-            return new Potres(null,"N/A", "N/A", 0.0);
+            return new Potres("N/A", "N/A", 0.0);
         }
     }
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
@@ -111,67 +111,62 @@ public class PotresiService {
 
                     String geoLokacija = latitude + "," + longitude;
 
-                    najhujsiPotres = new Potres(null,kraj, geoLokacija, globina);
+                    najhujsiPotres = new Potres(kraj, geoLokacija, globina);
                 }
             }
 
             return najhujsiPotres;
         } catch (Exception e) {
             log.error("Napaka pri pridobitvi podatkov", e);
-            return new Potres(null,"N/A", "N/A", 0.0);
+            return new Potres("N/A", "N/A", 0.0);
         }
     }
 
     @Autowired
     private VremeService vremeService;
 
+    @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
     public Potres najdiZadnji() {
-
         String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson";
 
-        Potres zadnjiPotres = null;
-
         try {
-
             String response = restTemplate.getForObject(url, String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(response);
-            JsonNode feature = rootNode.path("features");
+            JsonNode features = rootNode.path("features");
 
 
-            //prvi v seznamu
-             if (feature.size() > 0) {
-                JsonNode properties = feature.path("properties");
+                JsonNode firstFeature = features.get(0);
+                JsonNode properties = firstFeature.path("properties");
+                JsonNode geometry = firstFeature.path("geometry");
 
                 String kraj = properties.path("place").asText();
-
-                JsonNode geometry = feature.path("geometry");
                 JsonNode coordinates = geometry.path("coordinates");
-
 
                 double longitude = coordinates.get(0).asDouble();
                 double latitude = coordinates.get(1).asDouble();
                 double globina = coordinates.get(2).asDouble();
 
                 String geoLokacija = latitude + "," + longitude;
+                Vreme vreme = vremeService.pridobiVreme(latitude, longitude);
 
-
-                 Vreme vreme = vremeService.pridobiVreme(latitude, longitude);
-                zadnjiPotres = new Potres(null,kraj, geoLokacija, globina);
+                Potres zadnjiPotres = new Potres(kraj, geoLokacija, globina);
                 zadnjiPotres.setVreme(vreme);
-
-
-             }
-
+                return zadnjiPotres;
 
         } catch (Exception e) {
-            log.error("Napaka pri pridobitvi podatkov za zadnji", e);
-            return new Potres(null,"N/A", "N/A", 0.0);
-
+            log.error("Napaka pri pridobitvi podatkov za zadnji potres", e);
         }
 
 
-        return zadnjiPotres;
+        return new Potres("N/A", "N/A", 0.0);
+
+
+    }
+
+    private Potres fallbackZaPotrese(Exception e) {
+        log.warn("Uporabljam fallback za potrese v zadnjem tednu. Razlog: {}", e.getMessage());
+        return new Potres("N/A (fallback)", "N/A,N/A", 0.0);
     }
 }
 

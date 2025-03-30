@@ -8,52 +8,55 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import si.telekom.potres.configuration.VremeApiProperties;
 import si.telekom.potres.model.Vreme;
 
 @Slf4j
+
 @Service
 public class VremeService {
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final VremeApiProperties vremeProps;
 
     @Autowired
-    public VremeService(RestTemplate restTemplate) {
+    public VremeService(RestTemplate restTemplate, VremeApiProperties vremeProps) {
         this.restTemplate = restTemplate;
+        this.vremeProps = vremeProps;
     }
-
-    private String api_key = "72b390c3c9e77e7a8590daa3ecb56003";
 
     @CircuitBreaker(name = "vreme", fallbackMethod = "fallbackZaVreme")
     public Vreme pridobiVreme(double lat, double lng) {
-        String url = String.format("https://history.openweathermap.org/data/2.5/history/city?lat=%f&lon=%f&type=hour&units=metric&appid=%s",
-                lat, lng, api_key);
+        String url = String.format("%s?lat=%f&lon=%f&appid=%s&units=%s",
+                vremeProps.getApiUrl(),
+                lat,
+                lng,
+                vremeProps.getApiKey(),
+                vremeProps.getUnits());
 
-        Vreme vremeZadnje = null;
         try {
-
-
             String response = restTemplate.getForObject(url, String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(response);
 
-            JsonNode data = rootNode.path("main");
-            double temp = data.get("temp").asDouble();
+            JsonNode main = rootNode.path("main");
+            double temp = main.path("temp").asDouble();
 
-            JsonNode weather = rootNode.path("weather");
-            String stanje = weather.get("description").asText();
-
-            vremeZadnje = new Vreme(stanje, temp);
-            log.info("Vreme zadnje " + vremeZadnje);
-
-
+            JsonNode vremeArray = rootNode.path("weather");
+            if (vremeArray.isArray() && vremeArray.size() > 0) {
+                JsonNode firstWeather = vremeArray.get(0);
+                String stanje = firstWeather.path("description").asText();
+                return new Vreme(stanje, temp);
+            }
         } catch (Exception e) {
-        log.error("Vreme zadnje " + vremeZadnje);
-
+            log.error("Napaka pri pridobivanju vremena: {}", e.getMessage());
         }
 
+        return fallbackZaVreme(lat, lng, null);
+    }
 
-        return vremeZadnje;
-
-
+    private Vreme fallbackZaVreme(double lat, double lng, Exception e) {
+        log.warn("Uporabljam fallback za vreme na lokaciji {}/{}. Razlog: {}", lat, lng, e.getMessage());
+        return new Vreme("N/A", 0.0);
     }
 }
 
