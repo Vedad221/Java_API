@@ -1,9 +1,9 @@
 package si.telekom.potres.service;
 
+import si.telekom.potres.configuration.PotresApiConfig;
 import si.telekom.potres.model.Potres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,23 +11,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import si.telekom.potres.model.Vreme;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 
 @Slf4j
 @Service
 public class PotresiService {
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final PotresApiConfig potresApiConfig;
 
     @Autowired
-    public PotresiService(RestTemplate restTemplate) {
+    public PotresiService(RestTemplate restTemplate, PotresApiConfig potresApiConfig) {
         this.restTemplate = restTemplate;
+        this.potresApiConfig = potresApiConfig;
+
     }
+
+
 
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
     public Potres najdiZadnjiMesec() {
-        String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson";
+        String url = potresApiConfig.getMesec();
+        log.info(url);
 
         try {
 
@@ -69,13 +73,13 @@ public class PotresiService {
 
             return najhujsiPotres;
         } catch (Exception e) {
-            log.error("Napaka pri pridobitvi podatkov", e);
+            log.error("Napaka pri pridobitvi podatkov za zadnji mesec", e);
             return new Potres("N/A", "N/A", 0.0);
         }
     }
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
     public Potres najdiZadnjiTeden() {
-        String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+        String url = potresApiConfig.getTeden();
 
         try {
 
@@ -117,7 +121,7 @@ public class PotresiService {
 
             return najhujsiPotres;
         } catch (Exception e) {
-            log.error("Napaka pri pridobitvi podatkov", e);
+            log.error("Napaka pri pridobitvi podatkov za zadnji teden", e);
             return new Potres("N/A", "N/A", 0.0);
         }
     }
@@ -127,7 +131,7 @@ public class PotresiService {
 
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
     public Potres najdiZadnji() {
-        String url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson";
+        String url = potresApiConfig.getZadnji();
 
         try {
             String response = restTemplate.getForObject(url, String.class);
@@ -165,7 +169,7 @@ public class PotresiService {
     }
 
     private Potres fallbackZaPotrese(Exception e) {
-        log.warn("Uporabljam fallback za potrese v zadnjem tednu. Razlog: {}", e.getMessage());
+        log.warn("Uporabljam fallback za potrese. Razlog: {}", e.getMessage());
         return new Potres("N/A (fallback)", "N/A,N/A", 0.0);
     }
 }
