@@ -31,7 +31,7 @@ public class PotresiService {
     @CircuitBreaker(name = "potresi", fallbackMethod = "fallbackZaPotrese")
     public Potres najdiZadnjiMesec() {
         String url = potresApiConfig.getMesec();
-        log.info(url);
+
 
         try {
 
@@ -144,6 +144,8 @@ public class PotresiService {
                 JsonNode properties = firstFeature.path("properties");
                 JsonNode geometry = firstFeature.path("geometry");
 
+                long time = properties.path("time").asLong();
+
                 String kraj = properties.path("place").asText();
                 JsonNode coordinates = geometry.path("coordinates");
 
@@ -152,7 +154,7 @@ public class PotresiService {
                 double globina = coordinates.get(2).asDouble();
 
                 String geoLokacija = latitude + "," + longitude;
-                Vreme vreme = vremeService.pridobiVreme(latitude, longitude);
+                Vreme vreme = vremeService.pridobiVreme(latitude, longitude,time);
 
                 Potres zadnjiPotres = new Potres(kraj, geoLokacija, globina);
                 zadnjiPotres.setVreme(vreme);

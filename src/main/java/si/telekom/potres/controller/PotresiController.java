@@ -77,14 +77,14 @@ public class PotresiController {
         }
 
     }
-    @GetMapping("/vreme")
-    public Vreme zadnji2(){
-
-        Vreme rt;
-        rt = vremeService.pridobiVreme(19.0566673278809,-155.468826293945);
-        return rt;
-
-    }
+//    @GetMapping("/vreme")
+//    public Vreme zadnji2(){
+//
+//        Vreme rt;
+//        rt = vremeService.pridobiVreme(19.0566673278809,-155.468826293945);
+//        return rt;
+//
+//    }
     @GetMapping("/statistika")
     public String getStatistika(){
         int totalKlic=stevec.get();

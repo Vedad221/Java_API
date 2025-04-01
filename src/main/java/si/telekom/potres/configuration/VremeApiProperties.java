@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "openweather")
 public class VremeApiProperties {
-    // Getters and setters
+
     private String apiUrl;
     private String apiKey;
     private String units = "metric";

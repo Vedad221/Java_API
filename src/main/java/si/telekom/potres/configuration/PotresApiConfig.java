@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Objects;
 @Slf4j
 @Configuration
-@ConfigurationProperties(prefix = "potres.api.url")  // Make sure prefix matches exactly
-@Getter  // Lombok annotation to generate getters
-@Setter   // Lombok annotation to generate setters
+@ConfigurationProperties(prefix = "potres.api.url")
+@Getter
+@Setter
 public class PotresApiConfig {
     private String base;
     private String teden;

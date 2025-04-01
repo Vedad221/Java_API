@@ -25,12 +25,15 @@ public class VremeService {
     }
 
     @CircuitBreaker(name = "vreme", fallbackMethod = "fallbackZaVreme")
-    public Vreme pridobiVreme(double lat, double lng) {
-        String url = String.format("%s?lat=%f&lon=%f&appid=%s&units=%s",
+    public Vreme pridobiVreme(double lat, double lng, long time) {
+        long timeend;
+        String url = String.format("%s?lat=%f&lon=%f&appid=%s&start=%s&end=%s&units=%s",
                 vremeProps.getApiUrl(),
                 lat,
                 lng,
                 vremeProps.getApiKey(),
+                time,
+                timeend=time++,
                 vremeProps.getUnits());
 
         try {
@@ -42,9 +45,9 @@ public class VremeService {
             double temp = main.path("temp").asDouble();
 
             JsonNode vremeArray = rootNode.path("weather");
-            if (vremeArray.isArray() && vremeArray.size() > 0) {
-                JsonNode firstWeather = vremeArray.get(0);
-                String stanje = firstWeather.path("description").asText();
+            if (vremeArray.size() > 0) {
+                JsonNode prviWeather = vremeArray.get(0);
+                String stanje = prviWeather.path("description").asText();
                 return new Vreme(stanje, temp);
             }
         } catch (Exception e) {
